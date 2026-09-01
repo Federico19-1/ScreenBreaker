@@ -1,0 +1,35 @@
+{
+    "name": "ScreenBreaker",
+    "short_name": "ScreenBreaker",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0C0A14",
+    "theme_color": "#9B4DFF",
+    "description": "ScreenBreaker - helps you reduce mindless scrolling by monitoring and limiting screen time on selected apps.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
