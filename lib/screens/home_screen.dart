@@ -3,13 +3,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../models/monitored_app.dart';
+import '../models/mindful_task.dart';
 import '../services/foreground_service.dart';
+import '../services/mindful_streak_service.dart';
 import '../services/preferences_repository.dart';
 import '../services/streak_service.dart';
 import '../services/usage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 import 'appearance_screen.dart';
+import 'mindful_streak_screen.dart';
 import 'news_screen.dart';
 import 'settings_screen.dart';
 import 'tracking_screen.dart';
@@ -34,6 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
   int _streak = 0;
   int _bestStreak = 0;
 
+  MindfulTask _mindfulTask = MindfulTask.catalog.first;
+  bool _mindfulDone = false;
+  int _mindfulStreak = 0;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadApps();
     _loadTodayUsage();
     _loadStreak();
+    _loadMindfulStreak();
     // Opening the app counts as "using ScreenBreaker" today.
     StreakService.recordToday();
   }
@@ -70,6 +78,32 @@ class _HomeScreenState extends State<HomeScreen> {
         _bestStreak = best;
       });
     }
+  }
+
+  Future<void> _loadMindfulStreak() async {
+    final task = await MindfulStreakService.todayTask();
+    final done = await MindfulStreakService.isCompletedToday();
+    final streak = await MindfulStreakService.currentStreak();
+    if (!mounted) return;
+    setState(() {
+      _mindfulTask = task;
+      _mindfulDone = done;
+      _mindfulStreak = streak;
+    });
+  }
+
+  Future<void> _completeMindfulTask() async {
+    await MindfulStreakService.completeToday();
+    if (!mounted) return;
+    setState(() {
+      _mindfulDone = true;
+      _mindfulStreak += 1;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Well done! $_mindfulStreak-day mindful streak 🔥'),
+      ),
+    );
   }
 
   Future<void> _loadApps() async {
@@ -207,6 +241,24 @@ class _HomeScreenState extends State<HomeScreen> {
             streak: _streak,
             bestStreak: _bestStreak,
             todayTotal: _todayTotal,
+          ),
+          const SizedBox(height: 12),
+          // Mini-section: today's mindful task (earns the mindful streak).
+          _MindfulTaskCard(
+            task: _mindfulTask,
+            completed: _mindfulDone,
+            streak: _mindfulStreak,
+            onComplete: _completeMindfulTask,
+            onOpen: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const MindfulStreakScreen(),
+                ),
+              );
+              // The task may have been swapped or completed on the detail
+              // screen; refresh the card when we come back.
+              _loadMindfulStreak();
+            },
           ),
           const SizedBox(height: 12),
           _StatusBanner(enabledCount: enabledCount, monitoring: _monitoring),
@@ -399,6 +451,95 @@ class _StreakCard extends StatelessWidget {
   static String _fmtDuration(Duration d) {
     if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m';
     return '${d.inMinutes}m';
+  }
+}
+
+class _MindfulTaskCard extends StatelessWidget {
+  const _MindfulTaskCard({
+    required this.task,
+    required this.completed,
+    required this.streak,
+    required this.onComplete,
+    required this.onOpen,
+  });
+  final MindfulTask task;
+  final bool completed;
+  final int streak;
+  final VoidCallback onComplete;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onOpen,
+        child: Ink(
+          padding: const EdgeInsets.all(14),
+          decoration: appCardDecoration(),
+          child: Row(
+            children: [
+              Text(task.emoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Mindful streak',
+                          style: TextStyle(
+                            color: AppColors.iceWhite,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          streak > 0 ? '$streak 🔥' : '',
+                          style: TextStyle(
+                            color: AppColors.iceDim,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      completed ? 'Done today — see your history' : task.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: completed ? AppColors.success : AppColors.iceDim,
+                        fontSize: 13,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              completed
+                  ? Icon(Icons.check_circle, color: AppColors.success)
+                  : ElevatedButton(
+                      onPressed: onComplete,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        textStyle: const TextStyle(fontSize: 13),
+                      ),
+                      child: const Text('Done'),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
