@@ -121,7 +121,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             AppLogo(size: 26),
             SizedBox(width: 10),
@@ -137,7 +137,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
   Widget _buildContent() {
     if (_rows.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Text(
@@ -168,13 +168,13 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             children: [
               Text(
                 _weekLabel(_weekStart),
-                style: const TextStyle(color: AppColors.iceDim, fontSize: 14),
+                style: TextStyle(color: AppColors.iceDim, fontSize: 14),
               ),
               const SizedBox(height: 6),
               Text(
                 '${WeeklySummaryService.formatDuration(weekTotal)} across '
                 '$activeApps app${activeApps == 1 ? '' : 's'}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceWhite,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -188,7 +188,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
         // Header row for the day columns
         Row(
           children: [
-            const Expanded(
+            Expanded(
               flex: 3,
               child: Text(
                 'App',
@@ -200,7 +200,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                 child: Center(
                   child: Text(
                     letter,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.iceDim,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -208,7 +208,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                   ),
                 ),
               ),
-            const Expanded(
+            Expanded(
               child: Center(
                 child: Text(
                   'Total',
@@ -253,7 +253,7 @@ class _AppWeekRow extends StatelessWidget {
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppColors.iceWhite, fontSize: 14),
+              style: TextStyle(color: AppColors.iceWhite, fontSize: 14),
             ),
           ),
           for (final day in days)
@@ -274,7 +274,7 @@ class _AppWeekRow extends StatelessWidget {
             child: Center(
               child: Text(
                 _WeeklySummaryScreenState._compact(total),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceWhite,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,

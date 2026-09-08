@@ -9,6 +9,7 @@ import '../services/streak_service.dart';
 import '../services/usage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
+import 'appearance_screen.dart';
 import 'news_screen.dart';
 import 'settings_screen.dart';
 import 'tracking_screen.dart';
@@ -165,14 +166,23 @@ class _HomeScreenState extends State<HomeScreen> {
     final enabledCount = _apps.where((a) => a.enabled).length;
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             AppLogo(size: 30),
-            SizedBox(width: 10),
-            Text('ScreenBreaker'),
+            const SizedBox(width: 10),
+            const Text('ScreenBreaker'),
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Appearance',
+            icon: const Icon(Icons.palette_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const AppearanceScreen(),
+              ),
+            ),
+          ),
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),
@@ -235,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
           Row(
             children: [
-              const Text(
+              Text(
                 'Monitored apps',
                 style: TextStyle(
                   color: AppColors.iceWhite,
@@ -247,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (enabledCount > 0)
                 Text(
                   '$enabledCount on',
-                  style: const TextStyle(color: AppColors.iceDim, fontSize: 13),
+                  style: TextStyle(color: AppColors.iceDim, fontSize: 13),
                 ),
             ],
           ),
@@ -273,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
     }
     if (_apps.isEmpty) {
-      return const [
+      return [
         Padding(
           padding: EdgeInsets.symmetric(vertical: 32),
           child: Center(
@@ -338,7 +348,7 @@ class _StreakCard extends StatelessWidget {
               children: [
                 Text(
                   streak > 0 ? '$streak-day streak' : 'Start your streak',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.iceWhite,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
@@ -406,7 +416,7 @@ class _StreakStat extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(color: AppColors.iceWhite, fontSize: 12),
+          style: TextStyle(color: AppColors.iceWhite, fontSize: 12),
         ),
       ],
     );
@@ -487,7 +497,7 @@ class _NavCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceWhite,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -498,7 +508,7 @@ class _NavCard extends StatelessWidget {
                 subtitle,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceDim,
                   fontSize: 12,
                   height: 1.3,
@@ -538,11 +548,11 @@ class _AppRow extends StatelessWidget {
         app.appName,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: AppColors.iceWhite),
+        style: TextStyle(color: AppColors.iceWhite),
       ),
       subtitle: Text(
         'Limit: ${app.thresholdMinutes} min',
-        style: const TextStyle(color: AppColors.iceDim),
+        style: TextStyle(color: AppColors.iceDim),
       ),
       onChanged: onChanged,
     );
@@ -556,7 +566,7 @@ class _AppIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (bytes == null) {
-      return const CircleAvatar(
+      return CircleAvatar(
         radius: 20,
         backgroundColor: AppColors.surfaceHigh,
         child: Icon(Icons.android, color: AppColors.iceDim),
@@ -569,7 +579,7 @@ class _AppIcon extends StatelessWidget {
         width: 40,
         height: 40,
         fit: BoxFit.contain,
-        errorBuilder: (_, _, _) => const CircleAvatar(
+        errorBuilder: (_, _, _) => CircleAvatar(
           radius: 20,
           backgroundColor: AppColors.surfaceHigh,
           child: Icon(Icons.android, color: AppColors.iceDim),
@@ -591,12 +601,12 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.iceDim, size: 48),
+          Icon(Icons.error_outline, color: AppColors.iceDim, size: 48),
           const SizedBox(height: 12),
           Text(
             'Could not load apps:\n$message',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.iceDim),
+            style: TextStyle(color: AppColors.iceDim),
           ),
           const SizedBox(height: 16),
           OutlinedButton(onPressed: onRetry, child: const Text('Retry')),

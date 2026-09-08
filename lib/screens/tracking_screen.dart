@@ -119,7 +119,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             AppLogo(size: 26),
             SizedBox(width: 10),
@@ -206,7 +206,7 @@ class _DaySelector extends StatelessWidget {
             child: Center(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceWhite,
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -247,7 +247,7 @@ class _SummaryCard extends StatelessWidget {
         children: [
           Text(
             _formatDuration(total),
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.iceWhite,
               fontSize: 34,
               fontWeight: FontWeight.w800,
@@ -289,7 +289,7 @@ class _HourChartCard extends StatelessWidget {
   final Map<String, Duration> appTotals;
   final Map<String, String> appNames;
 
-  static const List<Color> _palette = [
+  static final List<Color> _palette = [
     AppColors.neonPurple,
     AppColors.techMagenta,
     AppColors.success,
@@ -348,7 +348,7 @@ class _HourChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.insights, size: 18, color: AppColors.neonPurple),
               SizedBox(width: 8),
@@ -364,7 +364,7 @@ class _HourChartCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           if (totalUsage == Duration.zero)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 40),
               child: Center(
                 child: Text(
@@ -427,7 +427,7 @@ class _Legend extends StatelessWidget {
             color: colors[entry.key]!,
             label: appNames[entry.key] ?? entry.key,
           ),
-        if (other) const _LegendItem(color: AppColors.iceDim, label: 'Other'),
+        if (other) _LegendItem(color: AppColors.iceDim, label: 'Other'),
       ],
     );
   }
@@ -454,7 +454,7 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(color: AppColors.iceDim, fontSize: 12),
+          style: TextStyle(color: AppColors.iceDim, fontSize: 12),
         ),
       ],
     );
@@ -513,7 +513,7 @@ class _HourlyChartPainter extends CustomPainter {
     for (var hour = 0; hour < 24; hour += 3) {
       labelPainter.text = TextSpan(
         text: '$hour',
-        style: const TextStyle(color: AppColors.iceDim, fontSize: 9),
+        style: TextStyle(color: AppColors.iceDim, fontSize: 9),
       );
       labelPainter.layout();
       labelPainter.paint(
@@ -549,7 +549,7 @@ class _AppBreakdownCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: appCardDecoration(),
-        child: const Text(
+        child: Text(
           'No usage recorded for this day',
           style: TextStyle(color: AppColors.iceDim),
         ),
@@ -563,7 +563,7 @@ class _AppBreakdownCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.apps, size: 18, color: AppColors.neonPurple),
               SizedBox(width: 8),
@@ -614,7 +614,7 @@ class _AppUsageRow extends StatelessWidget {
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceWhite,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -623,7 +623,7 @@ class _AppUsageRow extends StatelessWidget {
             ),
             Text(
               _formatDuration(duration),
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.neonPurple,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -638,7 +638,7 @@ class _AppUsageRow extends StatelessWidget {
             value: fraction.clamp(0.0, 1.0),
             minHeight: 6,
             backgroundColor: AppColors.surfaceHigh,
-            valueColor: const AlwaysStoppedAnimation(AppColors.neonPurple),
+            valueColor: AlwaysStoppedAnimation(AppColors.neonPurple),
           ),
         ),
       ],
@@ -670,9 +670,9 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 56, color: AppColors.iceDim),
+            Icon(Icons.error_outline, size: 56, color: AppColors.iceDim),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Could not load usage data',
               style: TextStyle(
                 color: AppColors.iceWhite,
@@ -681,7 +681,7 @@ class _ErrorState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Make sure Usage Access is enabled and try again.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.iceDim, height: 1.5),

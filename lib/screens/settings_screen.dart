@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/monitored_app.dart';
 import '../services/preferences_repository.dart';
 import '../theme/app_theme.dart';
+import 'appearance_screen.dart';
 
 /// Configures the time limit before a warning notification is sent.
 ///
@@ -81,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                const Text(
+                Text(
                   'Global time limit',
                   style: TextStyle(
                     color: AppColors.iceWhite,
@@ -90,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Applied to every monitored app unless you set a custom '
                   'limit below.',
                   style: TextStyle(color: AppColors.iceDim, height: 1.4),
@@ -102,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 32),
                 if (_apps.isNotEmpty) ...[
-                  const Text(
+                  Text(
                     'Per-app limits',
                     style: TextStyle(
                       color: AppColors.iceWhite,
@@ -111,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Override the global limit for specific apps.',
                     style: TextStyle(color: AppColors.iceDim, height: 1.4),
                   ),
@@ -126,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }).toList(),
                   ),
                 ] else
-                  const Text(
+                  Text(
                     'No apps are being monitored yet. Enable some on the '
                     'home screen and they will show up here.',
                     style: TextStyle(
@@ -134,8 +135,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontStyle: FontStyle.italic,
                     ),
                   ),
+                const SizedBox(height: 32),
+                Text(
+                  'Appearance',
+                  style: TextStyle(
+                    color: AppColors.iceWhite,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Change the app's colors and pick your logo.",
+                  style: TextStyle(color: AppColors.iceDim, height: 1.4),
+                ),
+                const SizedBox(height: 12),
+                _AppearanceCard(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AppearanceScreen(),
+                    ),
+                  ),
+                ),
               ],
             ),
+    );
+  }
+}
+
+class _AppearanceCard extends StatelessWidget {
+  const _AppearanceCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: appCardDecoration(),
+          child: Row(
+            children: [
+              Icon(Icons.palette_outlined, color: AppColors.neonPurple),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Colors & logos',
+                  style: TextStyle(
+                    color: AppColors.iceWhite,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right, color: AppColors.iceDim),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -150,7 +210,7 @@ class _ThresholdDropdown extends StatelessWidget {
     return DropdownButtonFormField<int>(
       initialValue: value,
       dropdownColor: AppColors.surfaceHigh,
-      style: const TextStyle(color: AppColors.iceWhite),
+      style: TextStyle(color: AppColors.iceWhite),
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.surfaceHigh,
@@ -193,7 +253,7 @@ class _PerAppTile extends StatelessWidget {
           Expanded(
             child: Text(
               name,
-              style: const TextStyle(color: AppColors.iceWhite, fontSize: 16),
+              style: TextStyle(color: AppColors.iceWhite, fontSize: 16),
             ),
           ),
           SizedBox(
@@ -201,7 +261,7 @@ class _PerAppTile extends StatelessWidget {
             child: DropdownButtonFormField<int?>(
               initialValue: overrideMinutes,
               dropdownColor: AppColors.surfaceHigh,
-              style: const TextStyle(color: AppColors.iceWhite),
+              style: TextStyle(color: AppColors.iceWhite),
               decoration: InputDecoration(
                 isDense: true,
                 filled: true,
@@ -212,7 +272,7 @@ class _PerAppTile extends StatelessWidget {
                 ),
               ),
               items: [
-                const DropdownMenuItem<int?>(
+                DropdownMenuItem<int?>(
                   value: null,
                   child: Text('Use global', style: TextStyle(color: AppColors.iceDim)),
                 ),

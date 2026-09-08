@@ -103,9 +103,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              const Center(child: AppLogo(size: 110)),
+              Center(child: AppLogo(size: 110)),
               const SizedBox(height: 28),
-              const Text(
+              Text(
                 'Welcome to ScreenBreaker',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -115,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'ScreenBreaker helps you spend less time on '
                 'mindless scrolling by warning you when you\'ve been '
                 'in an app too long.',
@@ -146,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ),
                 )
               else if (_granted)
-                const Center(
+                Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: Text(
@@ -156,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ),
                 )
               else ...[
-                const Text(
+                Text(
                   'One last step',
                   style: TextStyle(
                     color: AppColors.iceWhite,
@@ -165,7 +165,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'To measure your screen time we need Usage Access. '
                   'Tap below, then enable ScreenBreaker under '
                   'Special app access → Usage access.',
@@ -185,7 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
                 TextButton(
                   onPressed: (mounted) ? _checkPermission : null,
-                  child: const Text(
+                  child: Text(
                     "I've already enabled it — Continue",
                     style: TextStyle(color: AppColors.iceDim),
                   ),
@@ -214,7 +214,7 @@ class _Bullet extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(color: AppColors.iceWhite, fontSize: 15),
+            style: TextStyle(color: AppColors.iceWhite, fontSize: 15),
           ),
         ),
       ],

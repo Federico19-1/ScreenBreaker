@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/weekly_summary_screen.dart';
 import 'services/app_navigator.dart';
+import 'services/customization_service.dart';
 import 'services/foreground_service.dart';
 import 'services/notification_service.dart';
 import 'services/usage_service.dart';
@@ -21,11 +22,34 @@ Future<void> main() async {
   // Detect taps that launched the app (e.g. the weekly summary notification)
   // and wire up notification-tap navigation.
   await NotificationService.initializeLaunchHandling();
+  // Load the user's saved colors + logo before the first frame renders.
+  await CustomizationService.load();
   runApp(const ScreenBreakerApp());
 }
 
-class ScreenBreakerApp extends StatelessWidget {
+class ScreenBreakerApp extends StatefulWidget {
   const ScreenBreakerApp({super.key});
+
+  @override
+  State<ScreenBreakerApp> createState() => _ScreenBreakerAppState();
+}
+
+class _ScreenBreakerAppState extends State<ScreenBreakerApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Rebuild the whole MaterialApp (and thus every screen) whenever the
+    // user changes the color palette in the Appearance section.
+    CustomizationService.palette.addListener(_onPaletteChanged);
+  }
+
+  @override
+  void dispose() {
+    CustomizationService.palette.removeListener(_onPaletteChanged);
+    super.dispose();
+  }
+
+  void _onPaletteChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -99,14 +123,14 @@ class _SplashPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: AppColors.bluishBlack,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppLogo(size: 96),
-            SizedBox(height: 20),
+            const AppLogo(size: 96),
+            const SizedBox(height: 20),
             Text(
               'ScreenBreaker',
               style: TextStyle(
@@ -116,7 +140,7 @@ class _SplashPlaceholder extends StatelessWidget {
                 letterSpacing: 0.5,
               ),
             ),
-            SizedBox(height: 28),
+            const SizedBox(height: 28),
             SizedBox(
               width: 26,
               height: 26,

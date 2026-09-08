@@ -18,7 +18,7 @@ class BreakScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -38,7 +38,7 @@ class BreakScreen extends StatelessWidget {
                 const Spacer(flex: 2),
                 const AppLogo(size: 120),
                 const Spacer(),
-                const Text(
+                Text(
                   'STOP! 🛑',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -67,7 +67,7 @@ class BreakScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'This is your sign to step away from the screen. '
                   'Stand up, stretch, drink some water — your eyes and '
                   'your attention will thank you.',

@@ -60,7 +60,7 @@ class _NewsScreenState extends State<NewsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             AppLogo(size: 26),
             SizedBox(width: 10),
@@ -94,7 +94,7 @@ class _NewsScreenState extends State<NewsScreen> {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 if (index == articles.length) {
-                  return const Padding(
+                  return Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
                     child: Text(
                       'Powered by Google News · tap an article to open it',
@@ -151,7 +151,7 @@ class _ArticleCard extends StatelessWidget {
                       _byline(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.techMagenta,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class _ArticleCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 article.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.iceWhite,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -176,7 +176,7 @@ class _ArticleCard extends StatelessWidget {
                   article.snippet!,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.iceDim,
                     fontSize: 13,
                     height: 1.4,
@@ -238,7 +238,7 @@ class _NewsMessage extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.iceWhite,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -248,7 +248,7 @@ class _NewsMessage extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.iceDim, height: 1.5),
+              style: TextStyle(color: AppColors.iceDim, height: 1.5),
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
