@@ -1,8 +1,10 @@
-import '../services/preferences_repository.dart';
+import 'preferences_repository.dart';
+import 'strike_service.dart';
 import 'usage_service.dart';
 
-/// How far back a report looks.
-enum ReportRange { week, month }
+/// How far back a report looks. `today` powers the daily report; `week` and
+/// `month` the weekly/monthly ones.
+enum ReportRange { today, week, month }
 
 /// One day's total screen time.
 class DailyUsage {
@@ -27,6 +29,10 @@ class ReportData {
     required this.worstDay,
     required this.breakDays,
     required this.breakRate,
+    required this.strikes,
+    required this.livesLost,
+    required this.livesTotal,
+    required this.strikesPerDay,
     required this.trendMinutes,
     required this.score,
   });
@@ -57,6 +63,19 @@ class ReportData {
   /// Break days / active days (0..1).
   final double breakRate;
 
+  /// Strikes (lost lives) recorded inside the window.
+  final int strikes;
+
+  /// Strikes expressed as lives lost, clamped to [livesTotal].
+  final int livesLost;
+
+  /// Lives at stake in this window: [StrikeService.dailyLives] per day.
+  final int livesTotal;
+
+  /// Strikes per day across the window, oldest first (aligned with
+  /// [dailyUsage]).
+  final List<int> strikesPerDay;
+
   /// Second half of the window minus first half, in minutes. Negative means
   /// screen time went down — a good thing.
   final int trendMinutes;
@@ -73,7 +92,11 @@ class ReportService {
   static Future<ReportData> build(ReportRange range) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final days = range == ReportRange.week ? 7 : 30;
+    final days = switch (range) {
+      ReportRange.today => 1,
+      ReportRange.week => 7,
+      ReportRange.month => 30,
+    };
     final start = DateTime(today.year, today.month, today.day - (days - 1));
 
     // One aggregated usage query per day, run in parallel.
@@ -124,6 +147,13 @@ class ReportService {
     }
     final breakRate = activeDays == 0 ? 0.0 : breakDays / activeDays;
 
+    // Strikes: every over-limit alert in the window is a life lost.
+    final strikeRecords = await StrikeService.all();
+    final strikes = await StrikeService.strikesBetween(start, today,
+        strikes: strikeRecords);
+    final perDay = await StrikeService.strikesPerDay(days, strikes: strikeRecords);
+    final livesTotal = StrikeService.dailyLives * days;
+
     // Trend: compare the second half of the window against the first half.
     final half = days ~/ 2;
     final firstHalf = daily
@@ -138,6 +168,8 @@ class ReportService {
       total: total,
       activeDays: activeDays,
       breakRate: breakRate,
+      strikes: strikes,
+      livesTotal: livesTotal,
     );
 
     return ReportData(
@@ -150,6 +182,10 @@ class ReportService {
       worstDay: worst,
       breakDays: breakDays,
       breakRate: breakRate,
+      strikes: strikes,
+      livesLost: strikes.clamp(0, livesTotal),
+      livesTotal: livesTotal,
+      strikesPerDay: perDay,
       trendMinutes: trendMinutes,
       score: score,
     );
@@ -157,18 +193,25 @@ class ReportService {
 
   /// Overall time-management score from 0 to 100.
   ///
-  /// 60 points come from staying under a 4h/day average budget, 40 from
-  /// taking breaks on at least half of the active days.
+  /// 50 points come from staying under a 4h/day average budget, 30 from
+  /// taking breaks on at least half of the active days, and 20 from surviving
+  /// the window without burning all the available lives (strikes).
   static int _score({
     required Duration total,
     required int activeDays,
     required double breakRate,
+    required int strikes,
+    required int livesTotal,
   }) {
     if (activeDays == 0) return 0;
     final avgMinutes = total.inMinutes / activeDays;
-    // 0 min → 60 pts, 4h → 30 pts, 8h+ → 0 pts.
-    final timePoints = 60 * (1 - (avgMinutes / 480).clamp(0.0, 1.0));
-    final breakPoints = 40 * breakRate.clamp(0.0, 1.0);
-    return (timePoints + breakPoints).round().clamp(0, 100);
+    // 0 min → 50 pts, 4h → 25 pts, 8h+ → 0 pts.
+    final timePoints = 50 * (1 - (avgMinutes / 480).clamp(0.0, 1.0));
+    final breakPoints = 30 * breakRate.clamp(0.0, 1.0);
+    final livesKept = livesTotal <= 0
+        ? 1.0
+        : (1 - (strikes / livesTotal).clamp(0.0, 1.0));
+    final strikePoints = 20 * livesKept;
+    return (timePoints + breakPoints + strikePoints).round().clamp(0, 100);
   }
 }

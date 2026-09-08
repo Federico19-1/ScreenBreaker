@@ -6,6 +6,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'notification_service.dart';
 import 'preferences_repository.dart';
 import 'streak_service.dart';
+import 'strike_service.dart';
 import 'usage_service.dart';
 import 'weekly_summary_service.dart';
 
@@ -154,11 +155,20 @@ class ScreenBreakerTaskHandler extends TaskHandler {
 
         if (overLimit && cooldownElapsed) {
           final appName = await PreferencesRepository.getAppName(package);
-          await NotificationService.showOverLimitNotification(appName);
+          // The alert is a strike: one life lost for going over the limit.
+          final strikesSoFar = await StrikeService.strikesToday();
+          await StrikeService.recordStrike(package);
+          await NotificationService.showOverLimitNotification(
+            appName,
+            strikeNumber: (strikesSoFar + 1).clamp(1, StrikeService.dailyLives),
+            totalStrikes: StrikeService.dailyLives,
+          );
           await PreferencesRepository.setLastNotified(package);
           debugPrint(
             'ScreenBreaker: $package used $usedMinutes m '
-            '(limit $threshold m) → notified.',
+            '(limit $threshold m) → strike '
+            '${(strikesSoFar + 1).clamp(1, StrikeService.dailyLives)} '
+            'recorded.',
           );
         }
       }

@@ -69,7 +69,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
       showDragHandle: true,
       builder: (context) => _AppGoalPicker(
         usedPackages: usedPackages,
-        period: GoalPeriod.daily,
       ),
     );
     if (selected == null) return;
@@ -327,13 +326,9 @@ class _GoalCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _AppGoalPicker extends StatefulWidget {
-  const _AppGoalPicker({
-    required this.usedPackages,
-    required this.period,
-  });
+  const _AppGoalPicker({required this.usedPackages});
 
   final Set<String> usedPackages;
-  final GoalPeriod period;
 
   @override
   State<_AppGoalPicker> createState() => _AppGoalPickerState();

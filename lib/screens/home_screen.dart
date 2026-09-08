@@ -8,6 +8,7 @@ import '../services/foreground_service.dart';
 import '../services/mindful_streak_service.dart';
 import '../services/preferences_repository.dart';
 import '../services/streak_service.dart';
+import '../services/strike_service.dart';
 import '../services/usage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
@@ -43,6 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _mindfulDone = false;
   int _mindfulStreak = 0;
 
+  int _strikesToday = 0;
+  int _livesLeft = StrikeService.dailyLives;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadTodayUsage();
     _loadStreak();
     _loadMindfulStreak();
+    _loadStrikes();
     // Opening the app counts as "using ScreenBreaker" today.
     StreakService.recordToday();
   }
@@ -91,6 +96,16 @@ class _HomeScreenState extends State<HomeScreen> {
       _mindfulTask = task;
       _mindfulDone = done;
       _mindfulStreak = streak;
+    });
+  }
+
+  Future<void> _loadStrikes() async {
+    final strikes = await StrikeService.strikesToday();
+    final lives = await StrikeService.livesLeftToday();
+    if (!mounted) return;
+    setState(() {
+      _strikesToday = strikes;
+      _livesLeft = lives;
     });
   }
 
@@ -243,6 +258,12 @@ class _HomeScreenState extends State<HomeScreen> {
             streak: _streak,
             bestStreak: _bestStreak,
             todayTotal: _todayTotal,
+          ),
+          const SizedBox(height: 12),
+          // Mini-section: lives left today (strikes = lost lives).
+          _LivesCard(
+            strikesToday: _strikesToday,
+            livesLeft: _livesLeft,
           ),
           const SizedBox(height: 12),
           // Mini-section: today's mindful task (earns the mindful streak).
@@ -485,6 +506,59 @@ class _StreakCard extends StatelessWidget {
   static String _fmtDuration(Duration d) {
     if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m';
     return '${d.inMinutes}m';
+  }
+}
+
+class _LivesCard extends StatelessWidget {
+  const _LivesCard({
+    required this.strikesToday,
+    required this.livesLeft,
+  });
+  final int strikesToday;
+  final int livesLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    final allGone = livesLeft == 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: appCardDecoration(),
+      child: Row(
+        children: [
+          Icon(
+            allGone ? Icons.sports_baseball : Icons.favorite,
+            color: allGone ? AppColors.warning : AppColors.success,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              allGone
+                  ? 'All 3 lives gone today — every over-limit alert is a '
+                      'strike. Start fresh tomorrow.'
+                  : 'Lives left today: $livesLeft of ${StrikeService.dailyLives}'
+                      '${strikesToday > 0 ? ' • $strikesToday strike(s) taken' : ''}',
+              style: TextStyle(
+                color: allGone ? AppColors.warning : AppColors.iceWhite,
+                fontSize: 15,
+              ),
+            ),
+          ),
+          Wrap(
+            spacing: 4,
+            children: [
+              for (var i = 0; i < StrikeService.dailyLives; i++)
+                Icon(
+                  i < strikesToday ? Icons.heart_broken : Icons.favorite,
+                  size: 16,
+                  color: i < strikesToday
+                      ? AppColors.warning
+                      : AppColors.success,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

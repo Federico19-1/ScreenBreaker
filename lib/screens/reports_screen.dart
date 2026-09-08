@@ -68,6 +68,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 const SizedBox(height: 16),
                 _ScoreCard(data: _data!),
                 const SizedBox(height: 16),
+                _StrikesCard(data: _data!),
+                const SizedBox(height: 16),
                 _StatsGrid(data: _data!),
                 const SizedBox(height: 16),
                 _TrendCard(data: _data!),
@@ -101,9 +103,11 @@ class _RangeToggle extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(6),
                 child: _ToggleOption(
-                  label: range == ReportRange.week
-                      ? 'Last 7 days'
-                      : 'Last 30 days',
+                  label: switch (range) {
+                    ReportRange.today => 'Today',
+                    ReportRange.week => '7 days',
+                    ReportRange.month => '30 days',
+                  },
                   selected: range == selected,
                   onTap: () => onChanged(range),
                 ),
@@ -239,6 +243,86 @@ class _ScoreCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Strikes (lives lost)
+// ---------------------------------------------------------------------------
+
+class _StrikesCard extends StatelessWidget {
+  const _StrikesCard({required this.data});
+  final ReportData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final livesLeft = (data.livesTotal - data.livesLost).clamp(0, data.livesTotal);
+    final allGone = data.livesLost >= data.livesTotal && data.livesTotal > 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: appCardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.sports_baseball,
+                  size: 18, color: allGone ? AppColors.warning : AppColors.techMagenta),
+              const SizedBox(width: 8),
+              Text(
+                'Strikes',
+                style: TextStyle(
+                  color: AppColors.iceWhite,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${data.livesLost}/${data.livesTotal} lives lost',
+                style: TextStyle(
+                  color: allGone ? AppColors.warning : AppColors.iceDim,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // One heart per available life in the window.
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var i = 0; i < data.livesTotal; i++)
+                Icon(
+                  i < data.livesLost ? Icons.heart_broken : Icons.favorite,
+                  size: 18,
+                  color: i < data.livesLost
+                      ? AppColors.warning
+                      : AppColors.success,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            allGone
+                ? 'Every life in this window was lost to over-limit alerts. '
+                    'A strike is one over-limit notification — three a day '
+                    'and the day is gone.'
+                : 'Every over-limit alert is a strike: a life lost. '
+                    '$livesLeft of ${data.livesTotal} still standing in this '
+                    'window.',
+            style: TextStyle(
+              color: AppColors.iceDim,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Stats grid
 // ---------------------------------------------------------------------------
 
@@ -255,9 +339,11 @@ class _StatsGrid extends StatelessWidget {
             icon: Icons.schedule,
             label: 'Total',
             value: _fmt(data.totalScreenTime),
-            hint: data.range == ReportRange.week
-                ? 'in 7 days'
-                : 'in 30 days',
+            hint: switch (data.range) {
+              ReportRange.today => 'today',
+              ReportRange.week => 'in 7 days',
+              ReportRange.month => 'in 30 days',
+            },
           ),
         ),
         const SizedBox(width: 12),
@@ -458,6 +544,10 @@ class _DailyBarsCard extends StatelessWidget {
   const _DailyBarsCard({required this.data});
   final ReportData data;
 
+  /// Maximum strike dots drawn per day (the real count is still in the
+  /// Strikes card; this only keeps the chart layout bounded).
+  static const int _maxStrikeDots = 6;
+
   @override
   Widget build(BuildContext context) {
     final maxDuration = data.dailyUsage.fold<Duration>(
@@ -487,25 +577,50 @@ class _DailyBarsCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 120,
+            height: 130,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                for (final e in data.dailyUsage)
+                for (var i = 0; i < data.dailyUsage.length; i++)
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          // Strike dots above the bar: one per strike that
+                          // day (capped so the column can't overflow).
+                          if (data.strikesPerDay[i] > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 3),
+                              child: Wrap(
+                                spacing: 2,
+                                runSpacing: 2,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  for (var s = 0;
+                                      s < data.strikesPerDay[i] &&
+                                          s < _maxStrikeDots;
+                                      s++)
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.warning,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
                           Container(
                             height: maxDuration == Duration.zero
                                 ? 2
                                 : 100 *
-                                    (e.duration.inMinutes /
+                                    (data.dailyUsage[i].duration.inMinutes /
                                         maxDuration.inMinutes),
                             decoration: BoxDecoration(
-                              color: e.duration > Duration.zero
+                              color: data.dailyUsage[i].duration > Duration.zero
                                   ? AppColors.neonPurple
                                   : AppColors.surfaceHigh,
                               borderRadius: const BorderRadius.vertical(

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:screenbreaker/services/preferences_repository.dart';
 import 'package:screenbreaker/services/report_service.dart';
+import 'package:screenbreaker/services/strike_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -17,10 +18,19 @@ void main() {
       expect(report.worstDay, isNull);
     });
 
+    test('today window has exactly one entry and one life set', () async {
+      SharedPreferences.setMockInitialValues({});
+      final report = await ReportService.build(ReportRange.today);
+      expect(report.dailyUsage.length, 1);
+      expect(report.livesTotal, StrikeService.dailyLives);
+      expect(report.strikes, 0);
+    });
+
     test('monthly window has 30 entries', () async {
       SharedPreferences.setMockInitialValues({});
       final report = await ReportService.build(ReportRange.month);
       expect(report.dailyUsage.length, 30);
+      expect(report.livesTotal, StrikeService.dailyLives * 30);
     });
 
     test('counts recorded break days inside the window', () async {

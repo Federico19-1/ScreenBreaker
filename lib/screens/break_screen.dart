@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/preferences_repository.dart';
+import '../services/strike_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 
@@ -17,8 +18,9 @@ class BreakScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The user seeing this screen means they stepped away; remember today as
-    // a break day so the Reports page can score how well breaks are taken.
+    // The user seeing (and dismissing) this screen means they stepped away:
+    // remember today as a break day for the Reports page. The strike itself
+    // was already recorded by the monitoring loop when the alert fired.
     PreferencesRepository.recordBreakToday();
     return Scaffold(
       body: Container(
@@ -72,9 +74,9 @@ class BreakScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'This is your sign to step away from the screen. '
-                  'Stand up, stretch, drink some water — your eyes and '
-                  'your attention will thank you.',
+                  'Every over-limit alert is a strike — a life lost to '
+                  'scrolling. Take the break: stand up, stretch, drink some '
+                  'water. Your attention will thank you.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.iceWhite,
@@ -82,6 +84,8 @@ class BreakScreen extends StatelessWidget {
                     height: 1.5,
                   ),
                 ),
+                const SizedBox(height: 12),
+                _LivesLeftRow(),
                 const Spacer(flex: 2),
                 SizedBox(
                   width: double.infinity,
@@ -113,6 +117,39 @@ class BreakScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Shows today's remaining lives, live from [StrikeService].
+class _LivesLeftRow extends StatelessWidget {
+  const _LivesLeftRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<int>(
+      future: StrikeService.livesLeftToday(),
+      builder: (context, snapshot) {
+        final lives = snapshot.data ?? StrikeService.dailyLives;
+        return Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 6,
+          children: [
+            Text(
+              'Lives left today:',
+              style: TextStyle(color: AppColors.iceWhite, fontSize: 14),
+            ),
+            for (var i = 0; i < StrikeService.dailyLives; i++)
+              Icon(
+                i < lives ? Icons.favorite : Icons.heart_broken,
+                size: 18,
+                color: i < lives
+                    ? AppColors.iceWhite
+                    : Colors.white.withValues(alpha: 0.35),
+              ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'app_navigator.dart';
+import 'strike_service.dart';
 
 /// Sends the "time for a break" notifications for apps that exceed their limit.
 ///
@@ -97,8 +98,18 @@ class NotificationService {
   /// * [fullScreenIntent] → when the phone is locked (or the user is on
   ///   Android 14+ and allowed it), the whole screen lights up with the alert;
   ///   tapping it opens the full-screen [BreakScreen].
-  static Future<void> showOverLimitNotification(String appName) async {
+  /// Posts the over-limit notification for [appName] as a strike.
+  ///
+  /// [strikeNumber] is 1-based; [totalStrikes] is how many strikes lose the
+  /// day. The strike count shows up in the notification text ("Strike 2/3 —
+  /// you lost a life") so the alert itself carries the new stakes.
+  static Future<void> showOverLimitNotification(
+    String appName, {
+    int strikeNumber = 1,
+    int totalStrikes = StrikeService.dailyLives,
+  }) async {
     await initialize();
+    final title = 'Strike $strikeNumber/$totalStrikes! ⚾';
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         _channelId,
@@ -109,12 +120,14 @@ class NotificationService {
         fullScreenIntent: true,
         category: AndroidNotificationCategory.alarm,
         styleInformation: BigTextStyleInformation(
-          "You've been using $appName for too long.\n\n"
-              'Time to step away from the screen. 🛑\n'
+          "You've been using $appName for too long. That's a strike — "
+              'one life lost. 🛑\n\n'
+              '$strikeNumber of $totalStrikes strikes today. '
+              'Time to step away from the screen.\n'
               'Stand up, stretch, grab some water — you will feel better '
               'for it.',
-          contentTitle: 'ScreenBreaker',
-          summaryText: 'Time for a break!',
+          contentTitle: title,
+          summaryText: 'A life lost to scrolling',
         ),
       ),
     );
@@ -122,8 +135,9 @@ class NotificationService {
       // A stable id per package isn't available here for historical alerts, so
       // use a fixed id; the plugin replaces the previous alert, which is fine.
       _overLimitNotificationId,
-      'ScreenBreaker',
-      "You've been using $appName for too long. Time for a break! 🛑",
+      title,
+      "You've been using $appName for too long. Strike $strikeNumber of "
+          '$totalStrikes — time for a break! 🛑',
       details,
       // The payload lets the tap handler open the full-screen break screen.
       payload: '$_breakPayloadPrefix$appName',
