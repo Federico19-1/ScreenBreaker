@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/preferences_repository.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 
@@ -16,6 +17,9 @@ class BreakScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The user seeing this screen means they stepped away; remember today as
+    // a break day so the Reports page can score how well breaks are taken.
+    PreferencesRepository.recordBreakToday();
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(

@@ -20,6 +20,7 @@ class PreferencesRepository {
   static const String _keyGlobalThreshold = 'screenbreaker.global_threshold';
   static const String _keyLastNotified = 'screenbreaker.last_notified';
   static const String _keyLastSummaryWeek = 'screenbreaker.last_summary_week';
+  static const String _keyBreakDays = 'screenbreaker.break_days';
 
   // ---------------------------------------------------------------------------
   // Selected (monitored) apps
@@ -152,6 +153,37 @@ class PreferencesRepository {
     final map = _decodeIntMap(prefs.getString(_keyLastNotified));
     map[packageName] = DateTime.now().millisecondsSinceEpoch;
     await prefs.setString(_keyLastNotified, jsonEncode(map));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Break days (when the user confirmed a break)
+  // ---------------------------------------------------------------------------
+
+  /// Records that the user took a break today (idempotent per day). Each
+  /// entry is a `yyyy-MM-dd` key, so [getBreakDays] can count breaks per day
+  /// window for the Reports page.
+  static Future<void> recordBreakToday() async {
+    final prefs = await SharedPreferences.getInstance();
+    final days = (prefs.getStringList(_keyBreakDays) ?? const []).toSet();
+    final now = DateTime.now();
+    days.add(
+      '${now.year.toString().padLeft(4, '0')}-'
+      '${now.month.toString().padLeft(2, '0')}-'
+      '${now.day.toString().padLeft(2, '0')}',
+    );
+    final sorted = days.toList()..sort();
+    // Keep the list bounded: 90 days is enough for the Reports windows.
+    while (sorted.length > 90) {
+      sorted.removeAt(0);
+    }
+    await prefs.setStringList(_keyBreakDays, sorted);
+  }
+
+  /// The set of `yyyy-MM-dd` keys on which the user confirmed a break.
+  static Future<Set<String>> getBreakDays() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    return (prefs.getStringList(_keyBreakDays) ?? const []).toSet();
   }
 
   // ---------------------------------------------------------------------------

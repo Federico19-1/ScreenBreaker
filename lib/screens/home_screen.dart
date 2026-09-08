@@ -12,8 +12,10 @@ import '../services/usage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 import 'appearance_screen.dart';
+import 'goals_screen.dart';
 import 'mindful_streak_screen.dart';
 import 'news_screen.dart';
+import 'reports_screen.dart';
 import 'settings_screen.dart';
 import 'tracking_screen.dart';
 
@@ -288,6 +290,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => const NewsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _NavCard(
+                  icon: Icons.flag_outlined,
+                  iconColor: AppColors.success,
+                  title: 'Goals',
+                  subtitle: 'Set daily / weekly / monthly limits',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const GoalsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _NavCard(
+                  icon: Icons.assignment_outlined,
+                  iconColor: AppColors.neonPurple,
+                  title: 'Reports',
+                  subtitle: 'Time & break management results',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ReportsScreen(),
                     ),
                   ),
                 ),
