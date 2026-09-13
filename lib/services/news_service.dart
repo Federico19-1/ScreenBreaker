@@ -11,6 +11,7 @@ class NewsArticle {
     this.source,
     this.published,
     this.snippet,
+    this.imageUrl,
   });
 
   final String title;
@@ -23,6 +24,29 @@ class NewsArticle {
 
   /// Short plain-text description when the feed provides one.
   final String? snippet;
+
+  /// Best-effort story image URL from the feed (may be null). The UI falls
+  /// back to a generated gradient header when absent.
+  final String? imageUrl;
+
+  /// Display label for the publication day: "Today", "Yesterday" or a full
+  /// calendar date like "1 Sep 2026".
+  String get dateLabel {
+    final time = published;
+    if (time == null) return 'Date unavailable';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(time.year, time.month, time.day);
+    final diff = today.difference(day).inDays;
+    if (diff <= 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final y = day.year == now.year ? '' : ' ${day.year}';
+    return '${day.day} ${months[day.month - 1]}$y';
+  }
 }
 
 /// Fetches recent news about personal health, screen time, and attention
@@ -118,7 +142,41 @@ class NewsService {
       source: item.source?.value,
       published: _parseDate(item),
       snippet: _stripHtml(item.description),
+      imageUrl: _extractImage(item),
     );
+  }
+
+  /// Best-effort image extraction. Google News RSS items are link-only, so
+  /// we try, in order: the standard media RSS enclosures
+  /// (`media:thumbnail` / `media:content`), then any `<img src>` inside the
+  /// description HTML. Returns null when the feed offers nothing.
+  static String? _extractImage(RssItem item) {
+    // 1) Media-RSS namespace (present on many publisher feeds).
+    try {
+      final media = item.media;
+      final contents = media?.contents;
+      final thumbs = media?.thumbnails;
+      final fromMedia =
+          (contents != null && contents.isNotEmpty ? contents.first.url : null) ??
+              (thumbs != null && thumbs.isNotEmpty ? thumbs.first.url : null);
+      if (fromMedia != null && fromMedia.isNotEmpty) return fromMedia;
+    } catch (_) {
+      // The rss_dart media classes can throw on malformed groups; fall through.
+    }
+
+    // 2) Inline <img> in the description HTML. Quote characters are written
+    // as regex hex escapes (\x22 / \x27) because raw strings cannot contain
+    // escaped quotes.
+    final html = item.description;
+    if (html != null && html.isNotEmpty) {
+      final match = RegExp(
+        r'<img[^>]+src=[\x22\x27]([^\x22\x27]+)',
+        caseSensitive: false,
+      ).firstMatch(html);
+      final url = match?.group(1);
+      if (url != null && url.startsWith('http')) return url;
+    }
+    return null;
   }
 
   /// Best-effort date parsing: prefers the Dublin-Core ISO 8601 date (Google
